@@ -6,7 +6,8 @@ import org.springframework.samples.petclinic.owner.PetRepository;
 
 import java.util.concurrent.Callable;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
 
 // todo pass these tests
