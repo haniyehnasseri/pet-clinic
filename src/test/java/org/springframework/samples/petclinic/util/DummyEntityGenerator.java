@@ -1,4 +1,4 @@
-package util;
+package org.springframework.samples.petclinic.util;
 
 import org.springframework.samples.petclinic.owner.Owner;
 import org.springframework.samples.petclinic.owner.Pet;
