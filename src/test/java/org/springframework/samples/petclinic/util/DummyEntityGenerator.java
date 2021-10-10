@@ -11,7 +11,6 @@ import java.time.LocalDate;
  */
 public class DummyEntityGenerator {
 
-	private static Integer nextId = 0;
 
 	public static PetType getNewDummyPetType(){
 		PetType petType =  new PetType();
