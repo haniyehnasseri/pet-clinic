@@ -59,8 +59,8 @@ class OwnerTest {
 		Pet pet2 = DummyEntityGenerator.getNewDummyPet();
 		pet1.setName("aCat");
 		pet2.setName("bCat");
-		owner.addPet(pet1);
-		owner.addPet(pet2);
+		owner.getPetsInternal().add(pet1);
+		owner.getPetsInternal().add(pet2);
 		Assert.assertEquals(pet1, owner.getPets().get(0));
 		pet1.setName("dCat1");
 		Assert.assertEquals(pet2, owner.getPets().get(0));
@@ -73,9 +73,21 @@ class OwnerTest {
 	}
 
 	@Test
+	void changeUnmodifiablePetListTest(){
+		Pet pet1 = DummyEntityGenerator.getNewDummyPet();
+		Pet pet2 = DummyEntityGenerator.getNewDummyPet();
+		pet1.setName("aCat");
+		pet2.setName("bCat");
+		owner.getPetsInternal().add(pet1);
+		owner.getPetsInternal().add(pet2);
+		Assert.assertThrows(java.lang.UnsupportedOperationException.class, ()->owner.getPets().remove(0));
+		Assert.assertThrows(java.lang.UnsupportedOperationException.class, ()->owner.getPets().add(new Pet()));
+	}
+
+	@Test
 	void removePetTest(){
 		Pet pet = DummyEntityGenerator.getNewDummyPet();
-		owner.addPet(pet);
+		owner.getPetsInternal().add(pet);
 		Assert.assertEquals(1, owner.getPetsInternal().size());
 		owner.removePet(pet);
 		Assert.assertEquals(0, owner.getPetsInternal().size());
@@ -85,7 +97,7 @@ class OwnerTest {
 	void getAlreadySavedInDatabasePetTest(){
 		Pet newPet = DummyEntityGenerator.getNewDummyPet();
 		Pet savedPet = DummyEntityGenerator.getAlreadySavedInDatabaseDummyPet();
-		owner.addPet(newPet);
+		owner.getPetsInternal().add(newPet);
 		owner.getPetsInternal().add(savedPet);
 		Assert.assertEquals(2, owner.getPetsInternal().size());
 		Assert.assertNull(owner.getPet("cat1", true));
@@ -96,7 +108,7 @@ class OwnerTest {
 	void getNewOrAlreadySavedInDatabasePetTest(){
 		Pet newPet = DummyEntityGenerator.getNewDummyPet();
 		Pet savedPet = DummyEntityGenerator.getAlreadySavedInDatabaseDummyPet();
-		owner.addPet(newPet);
+		owner.getPetsInternal().add(newPet);
 		owner.getPetsInternal().add(savedPet);
 		Assert.assertEquals(2, owner.getPetsInternal().size());
 		Assert.assertNotNull(owner.getPet("cat1", false));
@@ -112,7 +124,5 @@ class OwnerTest {
 		owner.setPetsInternal(new HashSet<>(Arrays.asList(pet1,pet2)));
 		Assert.assertEquals(2, owner.getPetsInternal().size());
 	}
-
-
 
 }

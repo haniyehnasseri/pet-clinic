@@ -21,7 +21,7 @@ public class PetTestTheory {
 
 	private static LocalDate produceRandomDate(){
 		long minDay = LocalDate.of(2021, 1, 1).toEpochDay();
-		long maxDay = LocalDate.of(2021, 5, 1).toEpochDay();
+		long maxDay = LocalDate.of(2022, 5, 1).toEpochDay();
 		long randomDay = ThreadLocalRandom.current().nextLong(minDay, maxDay);
 		return LocalDate.ofEpochDay(randomDay);
 	}
@@ -54,6 +54,11 @@ public class PetTestTheory {
 				sortedVisits.get(i).getDate().isEqual(sortedVisits.get(i+1).getDate()));
 		}
 
+	}
 
+	@Theory
+	public void changeUnmodifiableVisitListTest(Pet pet, Visit visit)
+	{
+		Assert.assertThrows(java.lang.UnsupportedOperationException.class, ()->pet.getVisits().add(visit));
 	}
 }

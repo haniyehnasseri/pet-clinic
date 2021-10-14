@@ -56,5 +56,4 @@ public class OwnerTestTheory {
 		Assert.assertEquals(name, owner.getPet(name, false).getName());
 	}
 
-
 }
