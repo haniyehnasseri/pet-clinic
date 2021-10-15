@@ -121,8 +121,8 @@ class OwnerTest {
 	void setPetsInternalTest(){
 		Pet pet1 = DummyEntityGenerator.getNewDummyPet();
 		Pet pet2 = DummyEntityGenerator.getNewDummyPet();
-		owner.setPetsInternal(new HashSet<>(Arrays.asList(pet1,pet2)));
-		Assert.assertEquals(2, owner.getPetsInternal().size());
+		owner.setPetsInternal(new HashSet<>(Arrays.asList(pet1,pet2, null)));
+		Assert.assertEquals(3, owner.getPetsInternal().size());
 	}
 
 }
