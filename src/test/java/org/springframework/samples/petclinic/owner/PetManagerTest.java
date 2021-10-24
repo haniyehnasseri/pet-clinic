@@ -61,30 +61,31 @@ class PetManagerTest {
 	}
 
 
-	// State Verification
+	// State + Behavioural Verification
 	// using a Stub and a Dummy
-	// Mockisty
 	@Test
 	void findOwner_ValidOwnerId_FindsOwnerSuccessfully(){
 		// setup - data (Dummy Object)
-		int ownderId = 1;
+		int ownerId = 1;
 		Owner owner = Mockito.mock(Owner.class);
+
 		// setup - expectations (Stub returns a dummy object but not null in response to desired method call)
 		Mockito.doReturn(owner).when(ownerRepository).findById(anyInt());
+
 		//exercise
-		Owner foundOwner = petManager.findOwner(ownderId);
+		Owner foundOwner = petManager.findOwner(ownerId);
+
 		//verify
 		assertNotNull(foundOwner);
-		Mockito.verify(logger).info(Mockito.isA(String.class), Mockito.eq(ownderId));
+		Mockito.verify(logger).info(Mockito.isA(String.class), Mockito.eq(ownerId));
 	}
 
 	// State Verification
 	// using a Stub
-	// Mockisty
 	@Test
-	void findOwner_InvalidValidOwnerId_ReturnsNull(){
+	void findOwner_InvalidOwnerId_ReturnsNull(){
 		int ownerId = 1;
-		// setup - expectations (Stub returns a dummy object but not null in response to desired method call)
+		// setup - expectations (Stub returns a dummy object but null in response to desired method call)
 		Mockito.doReturn(null).when(ownerRepository).findById(anyInt());
 		// exercise
 		Owner foundOwner = petManager.findOwner(ownerId);
@@ -103,7 +104,6 @@ class PetManagerTest {
 	}
 
 	// State Verification + Behavioural Verification
-	// Mockisty
 	// used Spy Object for Owner
 	@Test()
 	void newPet_ValidSpyOwner_SuccessfullyAdded(){
@@ -115,15 +115,14 @@ class PetManagerTest {
 		Pet createdPet = petManager.newPet(spyOwner);
 		// verify
 		assertNotNull(spyOwner);
-		Mockito.verify(spyOwner).addPet(Mockito.isA(Pet.class));
 		assertNotNull(createdPet);
+		Mockito.verify(spyOwner).addPet(Mockito.isA(Pet.class));
 		Mockito.verify(logger).info(Mockito.isA(String.class), (Object) Mockito.isNull());
 	}
 
 
 	// State Verification + Behavioural Verification
-	// Mockisty
-	// using one Mock
+	// using one Mock for cache
 	@Test()
 	void findPet_InvalidPetId_ReturnNull(){
 		// setup - data
@@ -132,31 +131,32 @@ class PetManagerTest {
 		// exercise
 		Pet foundPet = petManager.findPet(searchingPetId);
 		// verify
-		Mockito.verify(petTimedCache).get(5);
 		assertNull(foundPet);
+		Mockito.verify(petTimedCache).get(5);
 		Mockito.verify(logger).info(Mockito.isA(String.class), Mockito.eq(searchingPetId));
 	}
 
 	// State Verification + Behavioural Verification
-	// Mockisty
-	// used one Mock
+	// used one Mock for cache
 	@Test()
 	void findPet_ValidPetId_SuccessfullyFound(){
 		// setup - data
 		int searchingPetId = 1;
+
 		// expectation for Mock petTimedCache in setup
+
 		// exercise
 		Pet foundPet = petManager.findPet(searchingPetId);
+
 		// verify
-		Mockito.verify(petTimedCache).get(1);
 		assertNotNull(foundPet);
 		assertEquals("pet1", foundPet.getName());
 		Mockito.verify(logger).info(Mockito.isA(String.class), Mockito.eq(searchingPetId));
+		Mockito.verify(petTimedCache).get(1);
 	}
 
 	// State Verification + Behavioural Verification
 	// used Dummy and Spy Objects
-	// Mockisty
 	@Test
 	void savePet_ValidMockedOwner_SuccessfullyAdded(){
 		// setup - data (Spy and Dummy)
@@ -170,15 +170,14 @@ class PetManagerTest {
 		petManager.savePet(dummyPet, spyOwner);
 
 		// verify
-		Mockito.verify(spyOwner).addPet(dummyPet);
 		assertEquals(dummyPet,pets.get(petsNum));
+		Mockito.verify(spyOwner).addPet(dummyPet);
 		Mockito.verify(logger).info(Mockito.isA(String.class), Mockito.eq(0));
 	}
 
 
 	// State Verification
 	// Dummy and Mock Objects
-	// Mockisty
 	@Test
 	void savePet_NullOwner_ThrowsNullPointerException(){
 		// setup - data (Dummy)
@@ -193,7 +192,6 @@ class PetManagerTest {
 
 	// State Verification
 	// Spy and Mock Objects
-	// Mockisty
 	@Test
 	void savePet_ValidMockedOwner_NullPet_NullPointerException(){
 		// setup - data (Spy)
@@ -210,7 +208,6 @@ class PetManagerTest {
 
 	// State Verification + Behavioural Verification
 	// One Mock One Stub
-	// Mockisty
 	@Test
 	void getOwnerPets_ExistingOwner_SuccessfullyReturnsPetsList(){
 
@@ -235,7 +232,6 @@ class PetManagerTest {
 
 	// State Verification
 	// one Stub
-	// Mockisty
 	@Test
 	void getOwnerPets_InvalidOwner_ReturnsNull(){
 
@@ -252,7 +248,6 @@ class PetManagerTest {
 
 	// State Verification
 	// one Stub
-	// Mockisty
 	@Test
 	void getOwnerPetTypes_InvalidOwner_ReturnsNull(){
 
