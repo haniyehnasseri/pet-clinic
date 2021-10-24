@@ -264,7 +264,6 @@ class PetManagerTest {
 
 	// State Verification
 	// two Stubs
-	// Mockisty
 	@Test
 	void getOwnerPetTypes_ValidStubbedOwner_EmptyPetsList_ReturnsEmptySet(){
 
@@ -288,7 +287,6 @@ class PetManagerTest {
 
 	// State + BehaviouralVerification
 	// two Stubs
-	// Mockisty
 	@Test
 	void getOwnerPetTypes_ValidStubbedOwner_PetsListEachDifferentPetType_ReturnsSuccessfully(){
 
@@ -326,7 +324,6 @@ class PetManagerTest {
 
 	// State + Behavioural Verification
 	// Two Stubs
-	// Mockisty
 	@Test
 	void getOwnerPetTypes_ValidMockedOwner_PetsListSamePetType_ReturnsSuccessfully(){
 
@@ -363,7 +360,6 @@ class PetManagerTest {
 
 	// State + Behavioural Verification
 	// Dummy for Visit + Spy for pet + Mock for petTimedCache + Dummy for LocalDate
-	// Mockisty
 	@Test
 	void getVisitsBetween_ValidPetId_ReturnsSuccessfully(){
 
@@ -392,7 +388,6 @@ class PetManagerTest {
 
 	// State Verification
 	// Mock for petTimedCache + Dummy for LocalDate
-	// Mockisty
 	@Test
 	void getVisitsBetween_InvalidPetId_NullPointerException(){
 
@@ -408,7 +403,6 @@ class PetManagerTest {
 
 	// State + Behavioural Verification
 	// Dummy for Visit + Mock for petTimedCache + Dummy for LocalDate + Spy for Pet
-	// Mockisty
 	@Test
 	void getVisitsBetween_ValidPetId_NullDate_SuccessfullyReturns(){
 
