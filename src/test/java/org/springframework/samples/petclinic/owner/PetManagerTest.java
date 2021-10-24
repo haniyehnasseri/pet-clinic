@@ -8,13 +8,15 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.slf4j.Logger;
-import org.springframework.beans.support.MutableSortDefinition;
-import org.springframework.beans.support.PropertyComparator;
 import org.springframework.samples.petclinic.util.DummyEntityGenerator;
 import org.springframework.samples.petclinic.utility.PetTimedCache;
+import org.springframework.samples.petclinic.visit.Visit;
+
+import java.time.LocalDate;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 
 class PetManagerTest {
@@ -40,10 +42,10 @@ class PetManagerTest {
 	static void initializePetManagerTestClassWithSomePets(){
 		Pet pet1 = DummyEntityGenerator.getNewDummyPet();
 		pet1.setName("pet1");
-		pets.put(1, pet1);
+		pets.put(1, Mockito.spy(pet1));
 		Pet pet2 = DummyEntityGenerator.getNewDummyPet();
 		pet2.setName("pet2");
-		pets.put(2, pet2);
+		pets.put(2, Mockito.spy(pet2));
 		pets.put(3, null);
 		petsNum = 3;
 	}
@@ -53,8 +55,8 @@ class PetManagerTest {
 		MockitoAnnotations.initMocks(this);
 		Mockito.doAnswer(invocationOnMock -> pets.get((Integer) invocationOnMock.getArgument(0))).when(petTimedCache).get(anyInt());
 		Mockito.doAnswer(invocationOnMock -> pets.put(++petsNum, invocationOnMock.getArgument(0)))
-			.when(petTimedCache).save(Mockito.any(Pet.class));
-		Mockito.doNothing().when(logger).info(Mockito.anyString(),Mockito.any(Object.class));
+			.when(petTimedCache).save(any(Pet.class));
+		Mockito.doNothing().when(logger).info(Mockito.anyString(), any(Object.class));
 		petManager = new PetManager(petTimedCache, ownerRepository, logger);
 	}
 
@@ -108,14 +110,14 @@ class PetManagerTest {
 		// setup - data (Spy Owner)
 		Owner spyOwner = Mockito.spy(Owner.class);
 		// setup - expectation
-		Mockito.doNothing().when(spyOwner).addPet(Mockito.any(Pet.class));
+		Mockito.doNothing().when(spyOwner).addPet(any(Pet.class));
 		// exercise
 		Pet createdPet = petManager.newPet(spyOwner);
 		// verify
 		assertNotNull(spyOwner);
 		Mockito.verify(spyOwner).addPet(Mockito.isA(Pet.class));
 		assertNotNull(createdPet);
-		Mockito.verify(logger).info(Mockito.isA(String.class), (Object) Mockito.eq(null));
+		Mockito.verify(logger).info(Mockito.isA(String.class), (Object) Mockito.isNull());
 	}
 
 
@@ -162,7 +164,7 @@ class PetManagerTest {
 		Pet dummyPet = Mockito.mock(Pet.class);
 
 		// expectation for Mock petTimedCache in setup
-		Mockito.doNothing().when(spyOwner).addPet(Mockito.any(Pet.class));
+		Mockito.doNothing().when(spyOwner).addPet(any(Pet.class));
 
 		// exercise
 		petManager.savePet(dummyPet, spyOwner);
@@ -198,7 +200,7 @@ class PetManagerTest {
 		Owner spyOwner = Mockito.spy(Owner.class);
 
 		// expectation for Mock petTimedCache in setup
-		Mockito.doNothing().when(spyOwner).addPet(Mockito.any(Pet.class));
+		Mockito.doNothing().when(spyOwner).addPet(any(Pet.class));
 
 		// exercise & verify
 		assertThrows(NullPointerException.class, () -> petManager.savePet(null, spyOwner));
@@ -216,7 +218,7 @@ class PetManagerTest {
 		Owner mockedOwner = Mockito.mock(Owner.class);
 		int mockedOwnerId = 1;
 
-		// expectation for Stub ownerRepository and Mock stubOwner
+		// expectation for Stub ownerRepository and Mock mockedOwner
 		Mockito.doReturn(Arrays.asList(pets.get(2), pets.get(1))).when(mockedOwner).getPets();
 		Mockito.doReturn(mockedOwner).when(ownerRepository).findById(mockedOwnerId);
 
@@ -228,7 +230,7 @@ class PetManagerTest {
 		assertNotNull(foundPets.get(0));
 		assertNotNull(foundPets.get(1));
 		Mockito.verify(mockedOwner).getPets();
-		Mockito.verify(logger, Mockito.atLeast(1)).info(Mockito.anyString(), Mockito.eq(mockedOwnerId));
+		Mockito.verify(logger, Mockito.atLeast(1)).info(Mockito.isA(String.class), Mockito.eq(mockedOwnerId));
 	}
 
 	// State Verification
@@ -266,40 +268,39 @@ class PetManagerTest {
 	}
 
 	// State + Behavioural Verification
-	// one Stub One Mock
+	// two Stubs
 	// Mockisty
 	@Test
 	void getOwnerPetTypes_ValidMockedOwner_EmptyPetsList_ReturnsEmptySet(){
 
-		// setup - data (Owner Mocked)
-		int mockedOwnerId = 1;
-		Owner mockedOwner = Mockito.mock(Owner.class);
-		List<Pet> mockedOwnerPetsList = new ArrayList<>();
+		// setup - data (Stub Owner)
+		int stubbedOwnerId = 1;
+		Owner stubbedOwner = Mockito.mock(Owner.class);
+		List<Pet> stubbedOwnerPetsList = new ArrayList<>();
 
 		// expectation for Stub ownerRepository and Stub stubOwner
-		Mockito.doReturn(mockedOwner).when(ownerRepository).findById(mockedOwnerId);
-		Mockito.doReturn(mockedOwnerPetsList).when(mockedOwner).getPets();
+		Mockito.doReturn(stubbedOwner).when(ownerRepository).findById(stubbedOwnerId);
+		Mockito.doReturn(stubbedOwnerPetsList).when(stubbedOwner).getPets();
 
 		// exercise
-		Set<PetType> petTypeSet = petManager.getOwnerPetTypes(mockedOwnerId);
+		Set<PetType> petTypeSet = petManager.getOwnerPetTypes(stubbedOwnerId);
 
 		//verify
 		assertEquals(0, petTypeSet.size());
-		Mockito.verify(mockedOwner, Mockito.times(1)).getPets();
-		Mockito.verify(logger, Mockito.atLeast(1)).info(Mockito.anyString(), Mockito.eq(mockedOwnerId));
+		Mockito.verify(logger, Mockito.atLeast(1)).info(Mockito.isA(String.class), Mockito.eq(stubbedOwnerId));
 	}
 
 
 	// State + BehaviouralVerification
-	// one Stub One Mock
+	// two Stubs
 	// Mockisty
 	@Test
 	void getOwnerPetTypes_ValidMockedOwner_PetsListEachDifferentPetType_ReturnsSuccessfully(){
 
-		// setup - data (Owner Mocked)
-		int mockedOwnerId = 1;
-		Owner mockedOwner = Mockito.mock(Owner.class);
-		List<Pet> mockedOwnerPetsList = new ArrayList<>();
+		// setup - data (Owner Stubbed)
+		int stubbedOwnerId = 1;
+		Owner stubbedOwner = Mockito.mock(Owner.class);
+		List<Pet> stubbedOwnerPetsList = new ArrayList<>();
 		Pet pet1 = DummyEntityGenerator.getNewDummyPet();
 		pet1.setName("pet1");
 		PetType petType1 = DummyEntityGenerator.getNewDummyPetType();
@@ -310,36 +311,35 @@ class PetManagerTest {
 		PetType petType2 = DummyEntityGenerator.getNewDummyPetType();
 		petType2.setName("petType2");
 		pet2.setType(petType2);
-		mockedOwnerPetsList.add(pet1);
-		mockedOwnerPetsList.add(pet2);
-		PropertyComparator.sort(mockedOwnerPetsList, new MutableSortDefinition("name", true, true));
-		List<Pet> sortedMockedOwnerPetsListCollections = Collections.unmodifiableList(mockedOwnerPetsList);
+		stubbedOwnerPetsList.add(Mockito.spy(pet1));
+		stubbedOwnerPetsList.add(Mockito.spy(pet2));
 
 		// expectation for Stub ownerRepository and Stub stubOwner
-		Mockito.doReturn(mockedOwner).when(ownerRepository).findById(mockedOwnerId);
-		Mockito.doReturn(sortedMockedOwnerPetsListCollections).when(mockedOwner).getPets();
+		Mockito.doReturn(stubbedOwner).when(ownerRepository).findById(stubbedOwnerId);
+		Mockito.doReturn(stubbedOwnerPetsList).when(stubbedOwner).getPets();
 
 		// exercise & verify
-		Set<PetType> petTypeSet = petManager.getOwnerPetTypes(mockedOwnerId);
+		Set<PetType> petTypeSet = petManager.getOwnerPetTypes(stubbedOwnerId);
 
 		//verify
 		assertEquals(2, petTypeSet.size());
-		assertEquals(2, sortedMockedOwnerPetsListCollections.size());
-		Mockito.verify(mockedOwner, Mockito.times(1)).getPets();
-		Mockito.verify(logger, Mockito.atLeast(1)).info(Mockito.anyString(), Mockito.eq(mockedOwnerId));
+		assertEquals(2, stubbedOwnerPetsList.size());
+		Mockito.verify(logger, Mockito.atLeastOnce()).info(Mockito.isA(String.class), Mockito.eq(stubbedOwnerId));
+		Mockito.verify(stubbedOwnerPetsList.get(0), Mockito.times(1)).getType();
+		Mockito.verify(stubbedOwnerPetsList.get(1), Mockito.times(1)).getType();
 	}
 
 
 	// State + Behavioural Verification
-	// one Stub One Mock
+	// Two Stubs
 	// Mockisty
 	@Test
 	void getOwnerPetTypes_ValidMockedOwner_PetsListSamePetType_ReturnsSuccessfully(){
 
-		// setup - data (Owner Mocked)
-		int mockedOwnerId = 1;
-		Owner mockedOwner = Mockito.mock(Owner.class);
-		List<Pet> mockedOwnerPetsList = new ArrayList<>();
+		// setup - data (Owner Stub)
+		int stubbedOwnerId = 1;
+		Owner stubbedOwner = Mockito.mock(Owner.class);
+		List<Pet> stubbedOwnerPetsList = new ArrayList<>();
 		Pet pet1 = DummyEntityGenerator.getNewDummyPet();
 		pet1.setName("pet1");
 		PetType petType1 = DummyEntityGenerator.getNewDummyPetType();
@@ -348,23 +348,101 @@ class PetManagerTest {
 		Pet pet2 = DummyEntityGenerator.getNewDummyPet();
 		pet2.setName("pet2");
 		pet2.setType(petType1);
-		mockedOwnerPetsList.add(pet1);
-		mockedOwnerPetsList.add(pet2);
-		PropertyComparator.sort(mockedOwnerPetsList, new MutableSortDefinition("name", true, true));
-		List<Pet> sortedMockedOwnerPetsListCollections = Collections.unmodifiableList(mockedOwnerPetsList);
+		stubbedOwnerPetsList.add(Mockito.spy(pet1));
+		stubbedOwnerPetsList.add(Mockito.spy(pet2));
 
-		// expectation for Stub ownerRepository and Stub stubOwner
-		Mockito.doReturn(mockedOwner).when(ownerRepository).findById(mockedOwnerId);
-		Mockito.doReturn(sortedMockedOwnerPetsListCollections).when(mockedOwner).getPets();
+		// expectation for Stub ownerRepository and Stub Owner
+		Mockito.doReturn(stubbedOwner).when(ownerRepository).findById(stubbedOwnerId);
+		Mockito.doReturn(stubbedOwnerPetsList).when(stubbedOwner).getPets();
 
-		// exercise & verify
-		Set<PetType> petTypeSet = petManager.getOwnerPetTypes(mockedOwnerId);
+		// exercise
+		Set<PetType> petTypeSet = petManager.getOwnerPetTypes(stubbedOwnerId);
 
 		//verify
 		assertEquals(1, petTypeSet.size());
-		assertEquals(2, sortedMockedOwnerPetsListCollections.size());
-		Mockito.verify(mockedOwner, Mockito.times(1)).getPets();
-		Mockito.verify(logger, Mockito.atLeast(1)).info(Mockito.anyString(), Mockito.eq(mockedOwnerId));
+		assertEquals(2, stubbedOwnerPetsList.size());
+		Mockito.verify(logger, Mockito.atLeastOnce()).info(Mockito.isA(String.class), Mockito.eq(stubbedOwnerId));
+		Mockito.verify(stubbedOwnerPetsList.get(0), Mockito.times(1)).getType();
+		Mockito.verify(stubbedOwnerPetsList.get(1), Mockito.times(1)).getType();
 	}
 
+
+	// State + Behavioural Verification
+	// Dummy for Visit + Spy for pet + Mock for petTimedCache + Dummy for LocalDate
+	// Mockisty
+	@Test
+	void getVisitsBetween_ValidPetId_ReturnsSuccessfully(){
+
+		// setup - data (Dummy Visits + Dummy LocalDates)
+		Visit visit1 = Mockito.mock(Visit.class);
+		Visit visit2 = Mockito.mock(Visit.class);
+		LocalDate l1 = LocalDate.now();
+		LocalDate l2 = LocalDate.now();
+		int petId = 1;
+		List<Visit> petVisits = new ArrayList<>(Arrays.asList(visit1, visit2));
+
+		// expectations on Spy Pet + Mock petTimedCache expectation in setup
+		Mockito.doReturn(petVisits).when(pets.get(1)).getVisitsBetween(any(LocalDate.class), any(LocalDate.class));
+
+		// exercise
+		List<Visit> returnedVisits = petManager.getVisitsBetween(petId, l1, l2);
+
+		// verify
+		assertEquals(2, returnedVisits.size());
+		assertTrue(returnedVisits.contains(visit1));
+		assertTrue(returnedVisits.contains(visit2));
+		Mockito.verify(pets.get(1)).getVisitsBetween(l1,l2);
+		Mockito.verify(logger, Mockito.times(1)).info(Mockito.isA(String.class), Mockito.eq(petId), Mockito.eq(l1), Mockito.eq(l2));
+	}
+
+
+	// State Verification
+	// Mock for petTimedCache + Dummy for LocalDate
+	// Mockisty
+	@Test
+	void getVisitsBetween_InvalidPetId_NullPointerException(){
+
+		// setup - data (Dummy LocalDates)
+		LocalDate l1 = LocalDate.now();
+		LocalDate l2 = LocalDate.now();
+		int petId = 3;
+
+		// exercise & verify
+		assertThrows(NullPointerException.class, () -> petManager.getVisitsBetween(petId, l1, l2));
+		Mockito.verify(logger, Mockito.times(1)).info(Mockito.isA(String.class), Mockito.eq(petId), Mockito.eq(l1), Mockito.eq(l2));
+	}
+
+	// State + Behavioural Verification
+	// Dummy for Visit + Mock for petTimedCache + Dummy for LocalDate + Spy for Pet
+	// Mockisty
+	@Test
+	void getVisitsBetween_ValidPetId_NullDate_SuccessfullyReturns(){
+
+		// setup - data (Dummy Visits + Dummy LocalDates)
+		Visit visit1 = Mockito.mock(Visit.class);
+		Visit visit2 = Mockito.mock(Visit.class);
+		LocalDate l2 = LocalDate.now();
+		int petId = 2;
+		List<Visit> petVisits = new ArrayList<>(Arrays.asList(visit1, visit2));
+
+		// expectations on Spy Pet + Mock petTimedCache expectation in setup
+		Mockito.doReturn(petVisits).when(pets.get(2)).getVisitsBetween(Mockito.isNull(), any(LocalDate.class));
+
+		// exercise
+		List<Visit> returnedVisits = petManager.getVisitsBetween(petId, null, l2);
+
+		// verify
+		assertEquals(2, returnedVisits.size());
+		assertTrue(returnedVisits.contains(visit1));
+		assertTrue(returnedVisits.contains(visit2));
+		Mockito.verify(pets.get(2)).getVisitsBetween(null,l2);
+		Mockito.verify(logger, Mockito.times(1)).info(Mockito.isA(String.class), Mockito.eq(petId), Mockito.isNull(), Mockito.eq(l2));
+
+	}
+
+	// ownerRepository --> stub
+	// cache --> Mock
+	// Logger --> spy
+	// owner differs in each test
+	// pets in HashMap spy
 }
