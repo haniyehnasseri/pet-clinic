@@ -228,7 +228,7 @@ class PetManagerTest {
 		assertNotNull(foundPets.get(0));
 		assertNotNull(foundPets.get(1));
 		Mockito.verify(mockedOwner).getPets();
-		Mockito.verify(logger).info("finding the owner's pets by id {}", mockedOwnerId);
+		Mockito.verify(logger, Mockito.atLeast(1)).info(Mockito.anyString(), Mockito.eq(mockedOwnerId));
 	}
 
 	// State Verification
@@ -245,7 +245,7 @@ class PetManagerTest {
 
 		// exercise & verify
 		assertThrows(NullPointerException.class, () -> petManager.getOwnerPets(1));
-		Mockito.verify(logger).info("finding the owner's pets by id {}", stubOwnerId);
+		Mockito.verify(logger, Mockito.atLeast(1)).info(Mockito.anyString(), Mockito.eq(stubOwnerId));
 	}
 
 	// State Verification
@@ -262,7 +262,7 @@ class PetManagerTest {
 
 		// exercise & verify
 		assertThrows(NullPointerException.class, () -> petManager.getOwnerPetTypes(1));
-		Mockito.verify(logger).info("finding the owner's petTypes by id {}", stubOwnerId);
+		Mockito.verify(logger, Mockito.atLeast(1)).info(Mockito.anyString(), Mockito.eq(stubOwnerId));
 	}
 
 	// State + Behavioural Verification
@@ -286,7 +286,7 @@ class PetManagerTest {
 		//verify
 		assertEquals(0, petTypeSet.size());
 		Mockito.verify(mockedOwner, Mockito.times(1)).getPets();
-		Mockito.verify(logger).info("finding the owner's petTypes by id {}", mockedOwnerId);
+		Mockito.verify(logger, Mockito.atLeast(1)).info(Mockito.anyString(), Mockito.eq(mockedOwnerId));
 	}
 
 
@@ -326,7 +326,7 @@ class PetManagerTest {
 		assertEquals(2, petTypeSet.size());
 		assertEquals(2, sortedMockedOwnerPetsListCollections.size());
 		Mockito.verify(mockedOwner, Mockito.times(1)).getPets();
-		Mockito.verify(logger).info("finding the owner's petTypes by id {}", mockedOwnerId);
+		Mockito.verify(logger, Mockito.atLeast(1)).info(Mockito.anyString(), Mockito.eq(mockedOwnerId));
 	}
 
 
@@ -364,7 +364,7 @@ class PetManagerTest {
 		assertEquals(1, petTypeSet.size());
 		assertEquals(2, sortedMockedOwnerPetsListCollections.size());
 		Mockito.verify(mockedOwner, Mockito.times(1)).getPets();
-		Mockito.verify(logger).info("finding the owner's petTypes by id {}", mockedOwnerId);
+		Mockito.verify(logger, Mockito.atLeast(1)).info(Mockito.anyString(), Mockito.eq(mockedOwnerId));
 	}
 
 }
