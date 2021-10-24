@@ -151,8 +151,8 @@ class PetManagerTest {
 		// verify
 		assertNotNull(foundPet);
 		assertEquals("pet1", foundPet.getName());
-		Mockito.verify(logger).info(Mockito.isA(String.class), Mockito.eq(searchingPetId));
 		Mockito.verify(petTimedCache).get(1);
+		Mockito.verify(logger).info(Mockito.isA(String.class), Mockito.eq(searchingPetId));
 	}
 
 	// State Verification + Behavioural Verification
@@ -180,7 +180,7 @@ class PetManagerTest {
 	// Dummy and Mock Objects
 	@Test
 	void savePet_NullOwner_ThrowsNullPointerException(){
-		// setup - data (Dummy)
+		// setup - data (Dummy) -----> Mock Object returns default values for fields of class
 		Pet dummyPet = Mockito.mock(Pet.class);
 		// expectation for Mock petTimedCache in setup
 
@@ -223,11 +223,11 @@ class PetManagerTest {
 		List<Pet> foundPets = petManager.getOwnerPets(mockedOwnerId);
 
 		//verify
+		Mockito.verify(mockedOwner).getPets();
+		Mockito.verify(logger, Mockito.atLeast(1)).info(Mockito.isA(String.class), Mockito.eq(mockedOwnerId));
 		assertEquals(2, foundPets.size());
 		assertNotNull(foundPets.get(0));
 		assertNotNull(foundPets.get(1));
-		Mockito.verify(mockedOwner).getPets();
-		Mockito.verify(logger, Mockito.atLeast(1)).info(Mockito.isA(String.class), Mockito.eq(mockedOwnerId));
 	}
 
 	// State Verification
@@ -258,15 +258,15 @@ class PetManagerTest {
 		Mockito.doReturn(null).when(ownerRepository).findById(stubOwnerId);
 
 		// exercise & verify
-		assertThrows(NullPointerException.class, () -> petManager.getOwnerPetTypes(1));
+		assertThrows(NullPointerException.class, () -> petManager.getOwnerPetTypes(stubOwnerId));
 		Mockito.verify(logger, Mockito.atLeast(1)).info(Mockito.anyString(), Mockito.eq(stubOwnerId));
 	}
 
-	// State + Behavioural Verification
+	// State Verification
 	// two Stubs
 	// Mockisty
 	@Test
-	void getOwnerPetTypes_ValidMockedOwner_EmptyPetsList_ReturnsEmptySet(){
+	void getOwnerPetTypes_ValidStubbedOwner_EmptyPetsList_ReturnsEmptySet(){
 
 		// setup - data (Stub Owner)
 		int stubbedOwnerId = 1;
@@ -290,7 +290,7 @@ class PetManagerTest {
 	// two Stubs
 	// Mockisty
 	@Test
-	void getOwnerPetTypes_ValidMockedOwner_PetsListEachDifferentPetType_ReturnsSuccessfully(){
+	void getOwnerPetTypes_ValidStubbedOwner_PetsListEachDifferentPetType_ReturnsSuccessfully(){
 
 		// setup - data (Owner Stubbed)
 		int stubbedOwnerId = 1;
@@ -309,16 +309,15 @@ class PetManagerTest {
 		stubbedOwnerPetsList.add(Mockito.spy(pet1));
 		stubbedOwnerPetsList.add(Mockito.spy(pet2));
 
-		// expectation for Stub ownerRepository and Stub stubOwner
+		// expectation for Stub ownerRepository and Stub stubbedOwner
 		Mockito.doReturn(stubbedOwner).when(ownerRepository).findById(stubbedOwnerId);
 		Mockito.doReturn(stubbedOwnerPetsList).when(stubbedOwner).getPets();
 
-		// exercise & verify
+		// exercise
 		Set<PetType> petTypeSet = petManager.getOwnerPetTypes(stubbedOwnerId);
 
 		//verify
 		assertEquals(2, petTypeSet.size());
-		assertEquals(2, stubbedOwnerPetsList.size());
 		Mockito.verify(logger, Mockito.atLeastOnce()).info(Mockito.isA(String.class), Mockito.eq(stubbedOwnerId));
 		Mockito.verify(stubbedOwnerPetsList.get(0), Mockito.times(1)).getType();
 		Mockito.verify(stubbedOwnerPetsList.get(1), Mockito.times(1)).getType();
