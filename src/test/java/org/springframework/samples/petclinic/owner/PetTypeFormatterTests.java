@@ -17,20 +17,20 @@
 package org.springframework.samples.petclinic.owner;
 
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.samples.petclinic.util.DummyEntityGenerator;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.times;
 
 /**
  * Test class for {@link PetTypeFormatter}
@@ -65,6 +65,7 @@ class PetTypeFormatterTests {
 		assertThat(petType.getName()).isEqualTo("Bird");
 	}
 
+
 	@Test
 	void shouldThrowParseException() throws ParseException {
 		given(this.pets.findPetTypes()).willReturn(makePetTypes());
@@ -72,6 +73,8 @@ class PetTypeFormatterTests {
 			petTypeFormatter.parse("Fish", Locale.ENGLISH);
 		});
 	}
+
+
 
 	/**
 	 * Helper method to produce some sample pet types just for test purpose
@@ -92,4 +95,99 @@ class PetTypeFormatterTests {
 		return petTypes;
 	}
 
+
+	/* Start */
+
+
+	//State
+	@Test
+	void parse_ValidText_State_ParseException(){
+		// setup - data (Spy petTypes)
+		PetType petType1 = DummyEntityGenerator.getNewDummyPetType();
+		petType1.setName("petType1");
+		PetType petType2 = DummyEntityGenerator.getNewDummyPetType();
+		petType2.setName("petType2");
+		String text = "dog";
+
+		// expectations
+		Mockito.doReturn(Arrays.asList(Mockito.spy(petType1), Mockito.spy(petType2))).when(pets).findPetTypes();
+
+		// exercise & verify
+		ParseException ex = Assertions.assertThrows(ParseException.class, () -> petTypeFormatter.parse(text, null));
+		Assertions.assertEquals("type not found: dog", ex.getMessage());
+	}
+
+
+	//Behaviour
+	@Test
+	void parse_ValidText_Behaviour_ParseException(){
+		// setup - data (Spy petTypes)
+		PetType petType1 = DummyEntityGenerator.getNewDummyPetType();
+		petType1.setName("petType1");
+		PetType petType2 = DummyEntityGenerator.getNewDummyPetType();
+		petType2.setName("petType2");
+		List<PetType> petTypes = new ArrayList<>();
+		petTypes.add(Mockito.spy(petType1));
+		petTypes.add(Mockito.spy(petType2));
+		String text = "dog";
+
+		// expectations
+		Mockito.doReturn(petTypes).when(pets).findPetTypes();
+
+		// exercise & verify
+		ParseException ex = Assertions.assertThrows(ParseException.class, () -> petTypeFormatter.parse(text, null));
+		Mockito.verify(petTypes.get(0), times(1)).getName();
+		Mockito.verify(petTypes.get(1), times(1)).getName();
+	}
+
+
+	//State
+	@Test
+	void parse_ValidText_State_Founded() throws ParseException {
+		// setup - data (Spy petTypes)
+		PetType petType1 = DummyEntityGenerator.getNewDummyPetType();
+		petType1.setName("petType1");
+		PetType petType2 = DummyEntityGenerator.getNewDummyPetType();
+		petType2.setName("dog");
+		List<PetType> petTypes = new ArrayList<>();
+		petTypes.add(Mockito.spy(petType1));
+		petTypes.add(Mockito.spy(petType2));
+		String text = "dog";
+
+		// expectations
+		Mockito.doReturn(petTypes).when(pets).findPetTypes();
+
+		// exercise
+		PetType foundPetType = petTypeFormatter.parse(text, null);
+
+		//verify
+		Assertions.assertTrue(petTypes.contains(foundPetType));
+		Assertions.assertNotNull(foundPetType);
+	}
+
+	//Behaviour
+	@Test
+	void parse_ValidText_Behaviour_Founded() throws ParseException {
+		// setup - data (Spy petTypes)
+		PetType petType1 = DummyEntityGenerator.getNewDummyPetType();
+		petType1.setName("dog");
+		PetType petType2 = DummyEntityGenerator.getNewDummyPetType();
+		petType2.setName("petType1");
+		List<PetType> petTypes = new ArrayList<>();
+		petTypes.add(Mockito.spy(petType1));
+		petTypes.add(Mockito.spy(petType2));
+		String text = "dog";
+
+		// expectations
+		Mockito.doReturn(petTypes).when(pets).findPetTypes();
+
+		// exercise
+		PetType foundPetType = petTypeFormatter.parse(text, null);
+
+		//verify
+		Mockito.verify(petTypes.get(0), times(1)).getName();
+		Mockito.verify(petTypes.get(1), times(0)).getName();
+	}
+
+	/* Finish */
 }
