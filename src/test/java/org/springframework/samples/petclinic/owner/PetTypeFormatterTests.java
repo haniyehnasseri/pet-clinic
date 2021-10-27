@@ -98,10 +98,11 @@ class PetTypeFormatterTests {
 
 	/* Start */
 
+	// We think asserting exceptions is both state verification and behavioural verification
 
 	//State
 	@Test
-	void parse_ValidText_State_ParseException(){
+	void parse_InValidText_State_ThrowsParseException(){
 		// setup - data (Spy petTypes)
 		PetType petType1 = DummyEntityGenerator.getNewDummyPetType();
 		petType1.setName("petType1");
@@ -110,7 +111,7 @@ class PetTypeFormatterTests {
 		String text = "dog";
 
 		// expectations
-		Mockito.doReturn(Arrays.asList(Mockito.spy(petType1), Mockito.spy(petType2))).when(pets).findPetTypes();
+		Mockito.doReturn(Arrays.asList(petType1, petType2)).when(pets).findPetTypes();
 
 		// exercise & verify
 		ParseException ex = Assertions.assertThrows(ParseException.class, () -> petTypeFormatter.parse(text, null));
@@ -120,7 +121,7 @@ class PetTypeFormatterTests {
 
 	//Behaviour
 	@Test
-	void parse_ValidText_Behaviour_ParseException(){
+	void parse_InValidText_Behaviour_ThrowsParseException(){
 		// setup - data (Spy petTypes)
 		PetType petType1 = DummyEntityGenerator.getNewDummyPetType();
 		petType1.setName("petType1");

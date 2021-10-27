@@ -18,8 +18,12 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.times;
 
 class PetManagerTest {
+
+	// We think asserting exceptions is both state verification and behavioural verification
+	// --> in this test class we assume it is behavioural
 
 	//Spy
 	@Spy
@@ -37,6 +41,12 @@ class PetManagerTest {
 	private static int petsNum = 0;
 
 	private PetManager petManager;
+
+	// ownerRepository --> stub
+	// cache --> Mock
+	// Logger --> spy
+	// owner differs in each test
+	// pets in HashMap spy
 
 	@BeforeAll
 	static void initializePetManagerTestClassWithSomePets(){
@@ -61,7 +71,7 @@ class PetManagerTest {
 	}
 
 
-	// State + Behavioural Verification
+	// State Verification
 	// using a Stub and a Dummy
 	@Test
 	void findOwner_ValidOwnerId_FindsOwnerSuccessfully(){
@@ -70,7 +80,7 @@ class PetManagerTest {
 		Owner owner = Mockito.mock(Owner.class);
 
 		// setup - expectations (Stub returns a dummy object but not null in response to desired method call)
-		Mockito.doReturn(owner).when(ownerRepository).findById(anyInt());
+		Mockito.doReturn(owner).when(ownerRepository).findById(ownerId);
 
 		//exercise
 		Owner foundOwner = petManager.findOwner(ownerId);
@@ -86,7 +96,7 @@ class PetManagerTest {
 	void findOwner_InvalidOwnerId_ReturnsNull(){
 		int ownerId = 1;
 		// setup - expectations (Stub returns a dummy object but null in response to desired method call)
-		Mockito.doReturn(null).when(ownerRepository).findById(anyInt());
+		Mockito.doReturn(null).when(ownerRepository).findById(ownerId);
 		// exercise
 		Owner foundOwner = petManager.findOwner(ownerId);
 		// verify
@@ -95,15 +105,17 @@ class PetManagerTest {
 	}
 
 
-	// State Verification
+	// Behavioural Verification
 	@Test()
 	void newPet_NullOwner_ExpectedThrowError(){
+		// setup
+		Owner owner = null;
 		// exercise & verify
-		assertThrows(NullPointerException.class, () -> petManager.newPet(null));
-		Mockito.verify(logger, Mockito.times(0)).info(Mockito.isA(String.class), anyInt());
+		assertThrows(NullPointerException.class, () -> petManager.newPet(owner));
+		Mockito.verify(logger, times(0)).info(Mockito.isA(String.class), anyInt());
 	}
 
-	// State Verification + Behavioural Verification
+	// Behavioural Verification
 	// used Spy Object for Owner
 	@Test()
 	void newPet_ValidSpyOwner_SuccessfullyAdded(){
@@ -114,8 +126,6 @@ class PetManagerTest {
 		// exercise
 		Pet createdPet = petManager.newPet(spyOwner);
 		// verify
-		assertNotNull(spyOwner);
-		assertNotNull(createdPet);
 		Mockito.verify(spyOwner).addPet(Mockito.isA(Pet.class));
 		Mockito.verify(logger).info(Mockito.isA(String.class), (Object) Mockito.isNull());
 	}
@@ -127,12 +137,12 @@ class PetManagerTest {
 	void findPet_InvalidPetId_ReturnNull(){
 		// setup - data
 		int searchingPetId = 5;
-		// expectation in setup
+		// expectation in setup (for petTimeCache)
 		// exercise
 		Pet foundPet = petManager.findPet(searchingPetId);
 		// verify
 		assertNull(foundPet);
-		Mockito.verify(petTimedCache).get(5);
+		Mockito.verify(petTimedCache).get(searchingPetId);
 		Mockito.verify(logger).info(Mockito.isA(String.class), Mockito.eq(searchingPetId));
 	}
 
@@ -151,12 +161,12 @@ class PetManagerTest {
 		// verify
 		assertNotNull(foundPet);
 		assertEquals("pet1", foundPet.getName());
-		Mockito.verify(petTimedCache).get(1);
+		Mockito.verify(petTimedCache).get(searchingPetId);
 		Mockito.verify(logger).info(Mockito.isA(String.class), Mockito.eq(searchingPetId));
 	}
 
 	// State Verification + Behavioural Verification
-	// used Dummy and Spy Objects
+	// used Dummy and Spy and Mock Objects
 	@Test
 	void savePet_ValidMockedOwner_SuccessfullyAdded(){
 		// setup - data (Spy and Dummy)
@@ -176,7 +186,7 @@ class PetManagerTest {
 	}
 
 
-	// State Verification
+	// State + Behavioural Verification
 	// Dummy and Mock Objects
 	@Test
 	void savePet_NullOwner_ThrowsNullPointerException(){
@@ -190,7 +200,7 @@ class PetManagerTest {
 		Mockito.verify(logger).info(Mockito.isA(String.class), Mockito.eq(0));
 	}
 
-	// State Verification
+	// Behavioural Verification
 	// Spy and Mock Objects
 	@Test
 	void savePet_ValidMockedOwner_NullPet_NullPointerException(){
@@ -202,7 +212,7 @@ class PetManagerTest {
 
 		// exercise & verify
 		assertThrows(NullPointerException.class, () -> petManager.savePet(null, spyOwner));
-		Mockito.verify(logger, Mockito.times(0)).info(Mockito.isA(String.class), anyInt());
+		Mockito.verify(logger, times(0)).info(Mockito.isA(String.class), anyInt());
 	}
 
 
@@ -212,8 +222,8 @@ class PetManagerTest {
 	void getOwnerPets_ExistingOwner_SuccessfullyReturnsPetsList(){
 
 		// setup - data (Mock)
-		Owner mockedOwner = Mockito.mock(Owner.class);
 		int mockedOwnerId = 1;
+		Owner mockedOwner = Mockito.mock(Owner.class);
 
 		// expectation for Stub ownerRepository and Mock mockedOwner
 		Mockito.doReturn(Arrays.asList(pets.get(2), pets.get(1))).when(mockedOwner).getPets();
@@ -223,14 +233,14 @@ class PetManagerTest {
 		List<Pet> foundPets = petManager.getOwnerPets(mockedOwnerId);
 
 		//verify
-		Mockito.verify(mockedOwner).getPets();
-		Mockito.verify(logger, Mockito.atLeast(1)).info(Mockito.isA(String.class), Mockito.eq(mockedOwnerId));
 		assertEquals(2, foundPets.size());
 		assertNotNull(foundPets.get(0));
 		assertNotNull(foundPets.get(1));
+		Mockito.verify(mockedOwner).getPets();
+		Mockito.verify(logger, Mockito.atLeast(1)).info(Mockito.isA(String.class), Mockito.eq(mockedOwnerId));
 	}
 
-	// State Verification
+	// Behavioural Verification
 	// one Stub
 	@Test
 	void getOwnerPets_InvalidOwner_ReturnsNull(){
@@ -243,10 +253,11 @@ class PetManagerTest {
 
 		// exercise & verify
 		assertThrows(NullPointerException.class, () -> petManager.getOwnerPets(1));
-		Mockito.verify(logger, Mockito.atLeast(1)).info(Mockito.anyString(), Mockito.eq(stubOwnerId));
+		// behavioural
+		Mockito.verify(logger, times(2)).info(Mockito.anyString(), Mockito.eq(stubOwnerId));
 	}
 
-	// State Verification
+	// Behavioural Verification
 	// one Stub
 	@Test
 	void getOwnerPetTypes_InvalidOwner_ReturnsNull(){
@@ -285,7 +296,7 @@ class PetManagerTest {
 	}
 
 
-	// State + BehaviouralVerification
+	// State + Behavioural Verification
 	// two Stubs
 	@Test
 	void getOwnerPetTypes_ValidStubbedOwner_PetsListEachDifferentPetType_ReturnsSuccessfully(){
@@ -316,9 +327,10 @@ class PetManagerTest {
 
 		//verify
 		assertEquals(2, petTypeSet.size());
+		// for testing for
+		Mockito.verify(stubbedOwnerPetsList.get(0), times(1)).getType();
+		Mockito.verify(stubbedOwnerPetsList.get(1), times(1)).getType();
 		Mockito.verify(logger, Mockito.atLeastOnce()).info(Mockito.isA(String.class), Mockito.eq(stubbedOwnerId));
-		Mockito.verify(stubbedOwnerPetsList.get(0), Mockito.times(1)).getType();
-		Mockito.verify(stubbedOwnerPetsList.get(1), Mockito.times(1)).getType();
 	}
 
 
@@ -351,10 +363,10 @@ class PetManagerTest {
 
 		//verify
 		assertEquals(1, petTypeSet.size());
-		assertEquals(2, stubbedOwnerPetsList.size());
+		// for testing for
+		Mockito.verify(stubbedOwnerPetsList.get(0), times(1)).getType();
+		Mockito.verify(stubbedOwnerPetsList.get(1), times(1)).getType();
 		Mockito.verify(logger, Mockito.atLeastOnce()).info(Mockito.isA(String.class), Mockito.eq(stubbedOwnerId));
-		Mockito.verify(stubbedOwnerPetsList.get(0), Mockito.times(1)).getType();
-		Mockito.verify(stubbedOwnerPetsList.get(1), Mockito.times(1)).getType();
 	}
 
 
@@ -371,7 +383,7 @@ class PetManagerTest {
 		int petId = 1;
 		List<Visit> petVisits = new ArrayList<>(Arrays.asList(visit1, visit2));
 
-		// expectations on Spy Pet + Mock petTimedCache expectation in setup
+		// expectations on Spy Pet + Mock petTimedCache expectation in setup (pets in our map are spy)
 		Mockito.doReturn(petVisits).when(pets.get(1)).getVisitsBetween(any(LocalDate.class), any(LocalDate.class));
 
 		// exercise
@@ -382,11 +394,11 @@ class PetManagerTest {
 		assertTrue(returnedVisits.contains(visit1));
 		assertTrue(returnedVisits.contains(visit2));
 		Mockito.verify(pets.get(1)).getVisitsBetween(l1,l2);
-		Mockito.verify(logger, Mockito.times(1)).info(Mockito.isA(String.class), Mockito.eq(petId), Mockito.eq(l1), Mockito.eq(l2));
+		Mockito.verify(logger, times(1)).info(Mockito.isA(String.class), Mockito.eq(petId), Mockito.eq(l1), Mockito.eq(l2));
 	}
 
 
-	// State Verification
+	// Behavioural Verification
 	// Mock for petTimedCache + Dummy for LocalDate
 	@Test
 	void getVisitsBetween_InvalidPetId_NullPointerException(){
@@ -398,7 +410,7 @@ class PetManagerTest {
 
 		// exercise & verify
 		assertThrows(NullPointerException.class, () -> petManager.getVisitsBetween(petId, l1, l2));
-		Mockito.verify(logger, Mockito.times(1)).info(Mockito.isA(String.class), Mockito.eq(petId), Mockito.eq(l1), Mockito.eq(l2));
+		Mockito.verify(logger, times(1)).info(Mockito.isA(String.class), Mockito.eq(petId), Mockito.eq(l1), Mockito.eq(l2));
 	}
 
 	// State + Behavioural Verification
@@ -413,7 +425,7 @@ class PetManagerTest {
 		int petId = 2;
 		List<Visit> petVisits = new ArrayList<>(Arrays.asList(visit1, visit2));
 
-		// expectations on Spy Pet + Mock petTimedCache expectation in setup
+		// expectations on Spy Pet + Mock petTimedCache expectation in setup (pets in our map are spy)
 		Mockito.doReturn(petVisits).when(pets.get(2)).getVisitsBetween(Mockito.isNull(), any(LocalDate.class));
 
 		// exercise
@@ -424,13 +436,7 @@ class PetManagerTest {
 		assertTrue(returnedVisits.contains(visit1));
 		assertTrue(returnedVisits.contains(visit2));
 		Mockito.verify(pets.get(2)).getVisitsBetween(null,l2);
-		Mockito.verify(logger, Mockito.times(1)).info(Mockito.isA(String.class), Mockito.eq(petId), Mockito.isNull(), Mockito.eq(l2));
+		Mockito.verify(logger, times(1)).info(Mockito.isA(String.class), Mockito.eq(petId), Mockito.isNull(), Mockito.eq(l2));
 
 	}
-
-	// ownerRepository --> stub
-	// cache --> Mock
-	// Logger --> spy
-	// owner differs in each test
-	// pets in HashMap spy
 }
