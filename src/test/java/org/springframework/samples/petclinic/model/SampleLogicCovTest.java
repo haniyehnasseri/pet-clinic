@@ -14,10 +14,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @ClauseDefinition(clause = 'b', def = "y == 0")
 @ClauseDefinition(clause = 'c', def = "z == 0")
 @ClauseDefinition(clause = 'd', def = "w == 0")
-class SampleLogicCovTest  {
+class SampleLogicCovTest {
 
 	public boolean predicate(int x, int y, int z, int w) {
-		if(x == 0 && (y == 0 || z == 0 && w == 0)) {
+		if (x == 0 && (y == 0 || z == 0 && w == 0)) {
 			return true;
 		} else {
 			return false;
@@ -37,7 +37,7 @@ class SampleLogicCovTest  {
 	)
 	@Test
 	public void testSampleOne() {
-		assertTrue(predicate(0,0,1,0));
+		assertTrue(predicate(0, 0, 1, 0));
 	}
 
 }
