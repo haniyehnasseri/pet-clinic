@@ -158,10 +158,8 @@ class TriCongruenceTest {
 		Assertions.assertFalse(areCongruent);
 	}
 
-	/**
-	 * TODO
-	 * explain your answer here
-	 */
+	// Start Of Question 2
+	
 	@UniqueTruePoint( //UTP1 : T T F F F
 		predicate = "ab + cd +e",
 		dnf = "ab + cd + e",
@@ -459,7 +457,6 @@ class TriCongruenceTest {
 
 	// We just have { T T F F F, F F T T F, F F F F T } out of all 15 UTP in our Tests;
 	private static boolean questionTwo(boolean a, boolean b, boolean c, boolean d, boolean e) {
-		//boolean predicate = false;
 		boolean predicate = a && b || c && d || e;
 		return predicate;
 	}
