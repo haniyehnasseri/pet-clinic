@@ -245,7 +245,6 @@
       <plugin>
         <groupId>org.pitest</groupId>
         <artifactId>pitest-maven</artifactId>
-        <version>${pitest.version}</version>
         <configuration>
           <targetClasses>
             <param>org.springframework.samples.petclinic.utility.PriceCalculator</param>
