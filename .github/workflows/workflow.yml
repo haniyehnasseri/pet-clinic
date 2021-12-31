@@ -22,11 +22,11 @@ jobs:
           distribution: 'adopt'
           cache: maven
       - name: Build with Maven
-        run: mvn -B clean package --file pom.xml
+        run: mvn -B clean package --file pom.xml compile
 
   test:
     runs-on: ubuntu-latest
-    name: Running tests
+    name: test
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -37,4 +37,6 @@ jobs:
           distribution: 'adopt'
           cache: maven
       - name: Run unit tests
-        run: mvn -B test
+        run:
+        - mvn -B test
+        - mvn -Dtest="bdd.BDDEntryPointAcceptanceTest" test
