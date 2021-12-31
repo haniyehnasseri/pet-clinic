@@ -27,6 +27,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     name: Running tests
+    needs: build
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK 14
@@ -34,5 +35,6 @@ jobs:
         with:
           java-version: '14'
           distribution: 'adopt'
+          cache: maven
       - name: Run unit tests
-        run: mvn -B test
+        run: mvn -B compiler:testCompile test
