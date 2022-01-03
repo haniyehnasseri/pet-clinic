@@ -60,5 +60,6 @@ public class SampleFeatureSteps {
 		petType = new PetType();
 		petType.setName(petTypeName);
 		petTypeRepository.save(petType);
+
 	}
 }
